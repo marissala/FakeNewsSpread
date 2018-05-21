@@ -1,0 +1,114 @@
+---
+title: "Plotting"
+author: "Maris Sala, Anita Kurm"
+date: "May 21, 2018"
+output: pdf_document
+---
+
+Initial visualizations
+
+```{r}
+pacman::p_load(ggplot2)
+
+data = read.csv("CleanData.csv")
+data$X = NULL
+
+data$probDetect = as.factor(data$probDetect)
+
+ggplot(subset(data, outbreakSize == "238"), aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  theme_classic()
+
+# Without 0.01 condition
+d1 = subset(data, outbreakSize == "238" & probDetect != "0.01")
+
+ggplot(d1, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, spreaders")
+
+ggplot(d1, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, educated")
+
+ggplot(d1, aes(tick, untouchedAmount, color = probDetect)) +
+  #geom_smooth() +
+  geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, untouched")
+
+ggplot(d1, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, naives")
+
+#### ------------------------------###
+# Only 0.01
+
+d2 = subset(data, outbreakSize == "238" & probDetect == "0.01")
+
+ggplot(d2, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, 0.01, spreaders")
+
+ggplot(d2, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, 0.01, educated")
+
+ggplot(d2, aes(tick, untouchedAmount, color = probDetect)) +
+  #geom_smooth() +
+  geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, 0.01, untouched")
+
+ggplot(d2, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, 0.01, naives")
+
+
+
+
+
+# Single plots
+ggplot(subset(data, outbreakSize == "238" & probDetect == "0.25"), aes(tick, spreadersAmount)) +
+  #geom_line() +
+  geom_smooth() +
+  theme_classic()
+
+ggplot(subset(data, outbreakSize == "238" & probDetect == "0.5"), aes(tick, spreadersAmount)) +
+  geom_smooth() +
+  theme_classic()
+
+ggplot(subset(data, outbreakSize == "238" & probDetect == "0.75"), aes(tick, spreadersAmount)) +
+  geom_smooth() +
+  theme_classic()
+
+ggplot(subset(data, outbreakSize == "238" & probDetect == "0.95"), aes(tick, spreadersAmount)) +
+  geom_smooth() +
+  theme_classic()
+
+### ---------------------- ###
+# NETLOGO plot again
+
+ggplot(data, aes(tick, ))
+
+```
+
