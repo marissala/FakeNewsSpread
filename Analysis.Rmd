@@ -1,0 +1,8 @@
+---
+title: "Analysis"
+author: "Anita Kurm, Maris Sala"
+date: "May 21, 2018"
+output: pdf_document
+---
+
+Actual Bayesian computational modeling here
