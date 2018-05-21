@@ -38,6 +38,9 @@ dataset<-rbind(dataset, d5)
 # Change column names
 colnames(dataset) = c("runNumber", "nodesAmount", "outbreakSize", "probDetect", "recovery", "tick", "turtlesAmount", "clusteringCoef", "pathLength", "naivesAmount", "spreadersAmount", "educatedAmount", "untouchedAmount", "fileID")
 
+# Remove turtlesAmount
+dataset$turtlesAmount = NULL
+
 # blue ones = naives
 # red = spreaders
 # grey = educated
