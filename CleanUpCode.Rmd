@@ -58,9 +58,5 @@ dat <- dataset[order(dataset$fileID),]
 
 # Save as a file just in case
 write.csv(dat, file = "CleanData.csv")
-<<<<<<< HEAD
-=======
-
->>>>>>> a0046d0e439bf643b3087fc9815f9fde7ea27653
 ```
 
