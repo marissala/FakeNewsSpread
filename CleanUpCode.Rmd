@@ -52,5 +52,8 @@ dat <- dataset[order(dataset$fileID),]
 #datscaled <- predict(preObj, dat)
 # Should not need this because:
 #These variables have zero variances: nodesAmount, recovery, turtlesAmount
+
+# Save as a file just in case
+write.csv(dat, file = "CleanData.csv")
 ```
 
