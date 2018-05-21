@@ -1,0 +1,56 @@
+---
+title: "DataCleanup"
+author: "Maris Sala, Anita Kurm"
+date: "May 21, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+pacman::p_load(caret)
+
+d1 = read.csv("Data/lastoutbreaksize.csv")
+d1$ID = 1
+d2 = read.csv("Data/lastprobdetect.csv")
+d2$ID = 2
+d3 = read.csv("Data/SimulationData.csv")
+d3$ID = 3
+d4 = read.csv("Data/simulationdata1.csv")
+d4$ID = 4
+d5 = read.csv("Data/simulationdata2.csv")
+d5$ID = 5
+
+dataset<-d1
+dataset<-rbind(dataset, d2)
+dataset<-rbind(dataset, d3)
+dataset<-rbind(dataset, d4)
+dataset<-rbind(dataset, d5)
+
+# Change column names
+colnames(dataset) = c("runNumber", "nodesAmount", "outbreakSize", "probDetect", "recovery", "tick", "turtlesAmount", "clusteringCoef", "pathLength", "naivesAmount", "spreadersAmount", "educatedAmount", "untouchedAmount", "fileID")
+
+# blue ones = naives
+# red = spreaders
+# grey = educated
+# yellow = untouched
+
+# Order based on file ID so that the data from the same simulation comes together
+dataset$runNumber = as.numeric(dataset$runNumber)
+dat <- dataset[order(dataset$fileID),]
+
+# Scaled dataframe
+#preObj <- preProcess(dat[, c(-1,-14)], method=c("center", "scale"))
+#datscaled <- predict(preObj, dat)
+# Should not need this because:
+#These variables have zero variances: nodesAmount, recovery, turtlesAmount
+```
+
