@@ -106,6 +106,7 @@ ggplot(subset(data, outbreakSize == "238" & probDetect == "0.95"), aes(tick, spr
   theme_classic()
 
 ### ---------------------- ###
+<<<<<<< HEAD
 # # NETLOGO plot again
 # dd1<- subset(data, outbreakSize == "3"& probDetect != "0.01")
 # dd2<- subset(data, outbreakSize == "63"& probDetect != "0.01")
@@ -165,6 +166,205 @@ ggplot(subset(data, outbreakSize == "238" & probDetect == "0.95"), aes(tick, spr
 #   theme_classic()+
 #   facet_wrap(~probDetect)+
 #   ggtitle("Size=238")
+=======
+# NETLOGO plot again
+
+#ggplot(data, aes(tick, ))
+
+
+
+```
+
+```{r}
+# Combo plots for all outbreak sizes
+#3 63 125 188 238
+
+### 3 ###
+d3 = subset(data, outbreakSize == "3" & probDetect != "0.01")
+
+m = ggplot(d3, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 3, without 0.01, spreaders") +
+  theme(legend.position="none")
+
+m1 = ggplot(d3, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 3, without 0.01, educated") +
+  theme(legend.position="none")
+
+m2 = ggplot(d3, aes(tick, untouchedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 3, without 0.01, untouched") +
+  theme(legend.position="none")
+
+m3 = ggplot(d3, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 3, without 0.01, naives") +
+  theme(legend.position="none")
+
+### 63 ###
+d4 = subset(data, outbreakSize == "63" & probDetect != "0.01")
+
+n = ggplot(d4, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, spreaders") +
+  theme(legend.position="none")
+
+n1 = ggplot(d4, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, educated") +
+  theme(legend.position="none")
+
+n2 = ggplot(d4, aes(tick, untouchedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, untouched") +
+  theme(legend.position="none")
+
+n3 = ggplot(d4, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, naives") +
+  theme(legend.position="none")
+
+### 125 ###
+d5 = subset(data, outbreakSize == "125" & probDetect != "0.01")
+
+s = ggplot(d5, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 125, without 0.01, spreaders") +
+  theme(legend.position="none")
+
+s1 = ggplot(d5, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, educated") +
+  theme(legend.position="none")
+
+s2 = ggplot(d5, aes(tick, untouchedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, untouched") +
+  theme(legend.position="none")
+
+s3 = ggplot(d5, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 63, without 0.01, naives") +
+  theme(legend.position="none")
+
+### 188 ###
+d6 = subset(data, outbreakSize == "188" & probDetect != "0.01")
+
+t = ggplot(d6, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 188, without 0.01, spreaders") +
+  theme(legend.position="none")
+
+t1 = ggplot(d6, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 188, without 0.01, educated") +
+  theme(legend.position="none")
+
+t2 = ggplot(d6, aes(tick, untouchedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 188, without 0.01, untouched") +
+  theme(legend.position="none")
+
+t3 = ggplot(d6, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 188, without 0.01, naives") +
+  theme(legend.position="none")
+
+### 238 ###
+d7 = subset(data, outbreakSize == "238" & probDetect != "0.01")
+
+u = ggplot(d7, aes(tick, spreadersAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, spreaders") +
+  theme(legend.position="none")
+
+u1 = ggplot(d7, aes(tick, educatedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, educated") +
+  theme(legend.position="none")
+
+u2 = ggplot(d7, aes(tick, untouchedAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, untouched") +
+  theme(legend.position="none")
+
+u3 = ggplot(d7, aes(tick, naivesAmount, color = probDetect)) +
+  geom_smooth() +
+  #geom_point()+
+  theme_classic() +
+  facet_grid(~probDetect) +
+  ggtitle("Size = 238, without 0.01, naives") +
+  theme(legend.position="none")
+
+# 3
+gridExtra::grid.arrange(m,m1,m2,m3)
+# 63
+gridExtra::grid.arrange(n,n1,n2,n3)
+# 125
+gridExtra::grid.arrange(s,s1,s2,s3)
+# 188
+gridExtra::grid.arrange(t,t1,t2,t3)
+# 238
+gridExtra::grid.arrange(u,u1,u2,u3)
+>>>>>>> afd474d7a7b3b2c15c0eda7d09ef8b21d16a40f4
 
 ```
 
