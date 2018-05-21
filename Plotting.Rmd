@@ -106,9 +106,65 @@ ggplot(subset(data, outbreakSize == "238" & probDetect == "0.95"), aes(tick, spr
   theme_classic()
 
 ### ---------------------- ###
-# NETLOGO plot again
-
-ggplot(data, aes(tick, ))
+# # NETLOGO plot again
+# dd1<- subset(data, outbreakSize == "3"& probDetect != "0.01")
+# dd2<- subset(data, outbreakSize == "63"& probDetect != "0.01")
+# dd3<- subset(data, outbreakSize == "125"& probDetect != "0.01")
+# dd4<- subset(data, outbreakSize == "188"& probDetect != "0.01")
+# dd5<- subset(data, outbreakSize == "238"& probDetect != "0.01")
+# 
+# 
+# ###################### OUTBREAK =3  
+# ggplot(dd1, aes(x=tick,group=1 ))+
+#   geom_smooth(aes(y=dd1$spreadersAmount,color="Spreaders"))+
+#   geom_smooth(aes(y=dd1$naivesAmount, color="Naives"))+
+#   geom_smooth(aes(y=dd1$educatedAmount, color="Educated"))+
+#   geom_smooth(aes(y=dd1$untouchedAmount, color="Untouched"))+
+#   theme_classic()+
+#   facet_wrap(~probDetect)+
+#   ggtitle("Size=3")
+# 
+# ###################### OUTBREAK =63  
+# ggplot(dd2, aes(x=tick,group=1 ))+
+#   geom_smooth(aes(y=dd2$spreadersAmount,color="Spreaders"))+
+#   geom_smooth(aes(y=dd2$naivesAmount, color="Naives"))+
+#   geom_smooth(aes(y=dd2$educatedAmount, color="Educated"))+
+#   geom_smooth(aes(y=dd2$untouchedAmount, color="Untouched"))+
+#   theme_classic()+
+#   facet_wrap(~probDetect)+
+#   ggtitle("Size=63")
+# 
+# ###################### OUTBREAK =125  
+# ggplot(dd3, aes(x=tick,group=1 ))+
+#   geom_smooth(aes(y=dd3$spreadersAmount,color="Spreaders"))+
+#   geom_smooth(aes(y=dd3$naivesAmount, color="Naives"))+
+#   geom_smooth(aes(y=dd3$educatedAmount, color="Educated"))+
+#   geom_smooth(aes(y=dd3$untouchedAmount, color="Untouched"))+
+#   theme_classic()+
+#   facet_wrap(~probDetect)+
+#   ggtitle("Size=125")
+# 
+# ###################### OUTBREAK = 188  
+# ggplot(dd4, aes(x=tick,group=1 ))+
+#   geom_smooth(aes(y=dd4$spreadersAmount,color="Spreaders"))+
+#   geom_smooth(aes(y=dd4$naivesAmount, color="Naives"))+
+#   geom_smooth(aes(y=dd4$educatedAmount, color="Educated"))+
+#   geom_smooth(aes(y=dd4$untouchedAmount, color="Untouched"))+
+#   #geom_point(aes(y=dd4$untouchedAmount, color="Untouched"))+
+#   theme_classic()+
+#   facet_wrap(~probDetect)+
+#   ggtitle("Size=188")
+# 
+# ###################### OUTBREAK = 238  
+# ggplot(dd5, aes(x=tick,group=1 ))+
+#   geom_smooth(aes(y=dd5$spreadersAmount,color="Spreaders"))+
+#   geom_smooth(aes(y=dd5$naivesAmount, color="Naives"))+
+#   geom_smooth(aes(y=dd5$educatedAmount, color="Educated"))+
+#   geom_smooth(aes(y=dd5$untouchedAmount, color="Untouched"))+
+#   #geom_point(aes(y=dd4$untouchedAmount, color="Untouched"))+
+#   theme_classic()+
+#   facet_wrap(~probDetect)+
+#   ggtitle("Size=238")
 
 ```
 
