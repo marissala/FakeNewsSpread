@@ -6,3 +6,103 @@ output: pdf_document
 ---
 
 Actual Bayesian computational modeling here
+
+```{r}
+#libraries 
+pacman::p_load(dplyr,magrittr,rethinking,brms,brmstools,ggplot2,caret)
+pacman::p_install_gh("mvuorre/brmstools")
+
+#data
+data = read.csv("CleanData.csv")
+data$X = NULL
+
+#new column
+data$ID_new = as.factor(paste(data$fileID, data$runNumber, sep = "_"))
+
+#arrange
+df<-dplyr::arrange(data, ID_new)
+
+#Summarize by so we know the ticks it took to complete each sim - our outcome
+maxTick = dplyr::group_by(df,ID_new) %>%
+  dplyr::summarize(maxTick = max(tick))
+new_df=merge(df,maxTick, all = T)
+
+```
+
+So what do we want our models to do?  it's very trashy, fix later.. when we figure out the repeated measures thing
+
+
+```{r}
+m1_formula <- bf(maxTick ~ outbreakSize+probDetect+(1|ID_new)) #The last bit is how you add repeated measures
+#We need to consider: Random effects?
+
+# get_prior(m1_formula,new_df, family = gaussian(), autocor=NULL, internal=FALSE) #Asking the model which priors it recommend
+# 
+# mean(new_df$outbreakSize)
+# mean(new_df$probDetect)
+# mean(new_df$maxTick)
+# 
+# prior = c(prior(normal(323,140), class = Intercept), #does it make sense???
+#           prior(normal(120,50), class = b, coef = outbreakSize),
+#           prior(normal(0,1), class = b, coef = probDetect),
+#           prior(cauchy(0,140), class = sigma))
+
+prior <- brms::get_prior(
+  brms::bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui, 
+           mui ~ 1 + (1|ID_new),
+           beta ~ 1, 
+           nl = TRUE), #should be treated as a non-linear model
+  data = new_df, 
+  family = gaussian())
+
+
+prior$prior[c(2,4)] <- "normal(0,10)"
+prior$prior[8] <- "student_t(3, 0, 11)"
+prior
+
+
+
+m1 <- brm(
+  bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui,
+     mui ~ 1 + (1|ID_new),
+     beta~1,
+     nl = TRUE),
+          family = gaussian(), #We assume our likelihood function to be normally distributed
+          prior = prior, #our list of pre-defined priors #write NULL here to use default priors
+          data = new_df,
+          iter = 2000,
+          core = 1,
+          chain = 1)
+
+summary(m1)
+plot(m1)
+
+dens(new_df$maxTick) #looks binomial? 
+
+
+m2_formula <- bf(maxTick ~ clusteringCoef + pathLength + outbreakSize + (1|ID_new)) #The last bit is how you add repeated measures
+#We need to consider: Random effects?
+#Remember: when comparing the models, this model should be punished because it's adding all them parameters 
+
+
+get_prior(m2_formula,new_df) #Asking the model which priors it recommend
+
+prior = c(prior(normal(0,1), class = Intercept),
+          prior(normal(0,1), class = b, coef = clusteringCoef),
+          prior(normal(0,1), class = b, coef = pathLength),
+          prior(normal(0,1), class = b, coef = outbreakSize ),
+          prior(cauchy(0,2), class = sigma))
+
+m2 <- brm(m2_formula,
+          family = gaussian(), #We assume our likelihood function to be normally distributed
+          prior = NULL, #our list of pre-defined priors
+          data = new_df,
+          iter = 2000,
+          cores = 2,
+          chain = 2)
+
+summary(m2)
+plot(m2)
+
+```
+
