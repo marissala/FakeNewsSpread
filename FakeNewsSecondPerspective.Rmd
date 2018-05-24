@@ -112,33 +112,40 @@ ggplot(d1, aes(tick, spreadersAmount, color = probDetect)) +
   theme_classic()+
   ggtitle("Size = 238, Amount of spreaders over time")
 
-ggplot(d3, aes(tick, spreadersAmount, color = probDetect)) +
+ggplot(d3, aes(tick, spreadersAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
   facet_grid(~outbreakSize) +
   ggtitle("Spreaders")
 
-ggplot(d1, aes(tick, educatedAmount, color = probDetect)) +
+ggplot(d3, aes(tick, educatedAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
-  facet_grid(~probDetect) +
-  ggtitle("Size = 238, educated")
+  facet_grid(~outbreakSize) +
+  ggtitle("Educated")
 
-ggplot(d1, aes(tick, untouchedAmount, color = probDetect)) +
+ggplot(d3, aes(tick, untouchedAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
-  facet_grid(~probDetect) +
-  ggtitle("Size = 238, untouched")
+  facet_grid(~outbreakSize) +
+  ggtitle("Untouched")
 
-ggplot(d1, aes(tick, naivesAmount, color = probDetect)) +
+ggplot(d3, aes(tick, naivesAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
-  facet_grid(~probDetect) +
-  ggtitle("Size = 238, naives")
+  facet_grid(~outbreakSize) +
+  ggtitle("Naives")
+
+```
+
+
+Analysis.
+Models:
+```{r}
 
 ```
 
