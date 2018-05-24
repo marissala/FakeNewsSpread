@@ -152,54 +152,109 @@ dens(new_df.s2$maxTick)
 mean(new_df.s2$maxTick) #15.8295 
 sd(new_df.s2$maxTick)  #9.5139 - intercept prior: normal(log(15.83), log(9.51))
 
-## MODEL 1 ##
+## MODEL 2 ##
 #ProbDetect model
-m1_formula <- bf(maxTick ~ outbreakSize + probDetect)
+m2_formula <- bf(maxTick ~ outbreakSize + probDetect)
 
-get_prior(m1_formula,new_df.s2) #Asking the model which priors it recommend
+get_prior(m2_formula,new_df.s2) #Asking the model which priors it recommend
 
 prior = c(prior(normal(log(15.83),log(9.51)), class = Intercept),
-          prior(normal(0,0.1), class = b, coef = outbreakSize), 
-          prior(normal(0,0.1), class = b, coef = probDetect))
-          #prior(cauchy(0,2), class = sigma)) 
+          prior(normal(0,0.5), class = b, coef = outbreakSize), 
+          prior(normal(0,0.5), class = b, coef = probDetect))
 
 
-m1 <- brm(m1_formula,
+m2 <- brm(m2_formula,
           family = poisson(link = "log"), #We assume our likelihood function to be poisson
           prior = prior, #our list of pre-defined priors
           data = new_df.s2,
-          warmup = 2500, # increased number of warmup and iterations
-          iter = 5000,
-          cores = 3,
-          chain = 3)
-
-summary(m1)
-plot(m1)
-
-## MODEL 2 ##
-#Structure effects
-m2_formula <- bf(maxTick ~ clusteringCoef*pathLength + outbreakSize)
-
-
-get_prior(m2_formula,new_df.s2) #Asking the model which priors it recommends 
-
-prior = c(prior(normal(log(15.83), log(9.51)), class = Intercept),
-          prior(normal(0,0.1), class = b, coef = clusteringCoef),
-          prior(normal(0,0.1), class = b, coef = pathLength),
-          prior(normal(0,0.1), class = b, coef = outbreakSize),
-          prior(normal(0,0.1), class = b, coef = clusteringCoef:pathLength))
-          #prior(cauchy(0,2), class = sigma))
-
-m2 <- brm(m2_formula,
-          family = poisson(link = "log"), #We assume our likelihood function to be normally distributed
-          prior = prior, #our list of pre-defined priors
-          data = new_df.s2,
-          iter = 5000,
-          warmup = 2500,
+          warmup = 4000, # increased number of warmup and iterations
+          iter = 10000,
           cores = 3,
           chain = 3)
 
 summary(m2)
 plot(m2)
+
+## MODEL 4 ##
+#Structure effects
+m4_formula <- bf(maxTick ~ clusteringCoef*pathLength + outbreakSize)
+
+
+get_prior(m4_formula,new_df.s2) #Asking the model which priors it recommends 
+
+prior = c(prior(normal(log(15.83), log(9.51)), class = Intercept),
+          prior(normal(0,0.5), class = b, coef = clusteringCoef),
+          prior(normal(0,0.5), class = b, coef = pathLength),
+          prior(normal(0,0.5), class = b, coef = outbreakSize),
+          prior(normal(0,0.5), class = b, coef = clusteringCoef:pathLength))
+        
+
+m4 <- brm(m4_formula,
+          family = poisson(link = "log"), #We assume our likelihood function to be normally distributed
+          prior = prior, #our list of pre-defined priors
+          data = new_df.s2,
+          iter = 10000,
+          warmup = 4000,
+          cores = 3,
+          chain = 3)
+
+summary(m4)
+plot(m4)
+```
+
+
+Visualize priors, posteriors
+```{r}
+#Plot priors
+x <- seq(-2,2, length=1e5)
+y <- dnorm(x, 0, 0.5)
+y.I <- dnorm(x, log(15.83), log(9.51))
+
+prior_df <- data.frame(x = rep(x,1), y = c(y), prior = c(rep("Beta Prior", length(y))))
+ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Beta Prior")+theme_minimal()
+
+x <- seq(0,4, length = 1e5)
+prior_df <- data.frame(x = rep(x,1), y = c(y.I), prior = c(rep("Intercept Prior", length(y.I))))
+ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Intercept Prior")+theme_minimal()
+
+#plot posterior distributions 
+  #Model 1
+post_samples <- c(posterior_samples(m2)$b_Intercept)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Intercept", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Intercept", x = "Posterior Samples")+theme_minimal()
+
+post_samples <- c(posterior_samples(m2)$b_outbreakSize)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Outbreak Size", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Outbreak Size", x = "Posterior Samples")+theme_minimal()
+
+post_samples <- c(posterior_samples(m2)$b_probDetect)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Probability of detection", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Probability of detection", x = "Posterior Samples")+theme_minimal()
+
+
+
+```
+
+
+Model 4
+```{r}
+#Model 4
+post_samples <- c(posterior_samples(m4)$b_Intercept)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Intercept", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Intercept", x = "Posterior Samples")+theme_minimal()
+
+
+post_samples <- c(posterior_samples(m4)$b_outbreakSize)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("OutbreakSize", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Outbreak Size", x = "Posterior Samples")+theme_minimal()
+
+post_samples <- c(posterior_samples(m4)$b_clusteringCoef)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Clustering Coefficient", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Clustering Coefficient", x = "Posterior Samples")+theme_minimal()
+
+post_samples <- c(posterior_samples(m4)$b_pathLength)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Average Path Length", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Average Path Length", x = "Posterior Samples")+theme_minimal()
+
 ```
 
