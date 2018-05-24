@@ -33,7 +33,7 @@ new_df=merge(df,maxTick, all = T)
 
 ```
 
-So what do we want our models to do?  it's very trashy, fix later.. when we figure out the repeated measures thing
+So what do we want our models to do?
 
 
 ```{r}
@@ -53,15 +53,17 @@ ggplot(new_df.s2, aes(maxTick, y=..density..)) +
 #Look at the outcome function - which likelihood function do we want?
   #Outcome is count - poisson 
 dens(new_df.s2$maxTick)
-sd(new_df.s2$maxTick)
+mean(new_df.s2$maxTick) #15.8295 
+sd(new_df.s2$maxTick)  #9.5139 - intercept prior: normal(log(15.83), log(9.51))
 
 #ProbDetect model
 m1_formula <- bf(maxTick ~ outbreakSize + probDetect)
 
 get_prior(m1_formula,new_df.s2) #Asking the model which priors it recommend
 
-# M: I MADE US HAVE SKEPTICAL PRIORS HERE
-prior = c(prior(normal(log(80),log(133)), class = Intercept),
+# M: I MADE US HAVE SKEPTICAL PRIORS HERE 
+# A: Changed it! because the mean and sd of maxtick changed after removing probdetect 0.01
+prior = c(prior(normal(log(15.83),log(9.51)), class = Intercept),
           prior(normal(0,0.1), class = b, coef = outbreakSize), 
           prior(normal(0,0.1), class = b, coef = probDetect)) 
 
@@ -70,8 +72,8 @@ m1 <- brm(m1_formula,
           family = poisson(link = "log"), #We assume our likelihood function to be poisson
           prior = prior, #our list of pre-defined priors
           data = new_df.s2,
-          warmup = 500,
-          iter = 1000,
+          warmup = 4000, # increased number of warmup and iterations
+          iter = 10000,
           cores = 3,
           chain = 3)
 
@@ -79,22 +81,7 @@ summary(m1)
 plot(m1)
 
 ## M: WHAT IS THIS?
-# m1 <- brm(
-#   bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui,
-#      mui ~ 1 + (1|ID_new),
-#      beta~1,
-#      nl = TRUE),
-#           family = gaussian(), #We assume our likelihood function to be normally distributed
-#           prior = prior, #our list of pre-defined priors #write NULL here to use default priors
-#           data = new_df.s2,
-#           iter = 2000,
-#           core = 1,
-#           chain = 1)
-# 
-# summary(m1)
-# plot(m1)
-# 
-# dens(new_df$maxTick) #looks binomial? 
+## A: NOTHING
 
 m2_formula <- bf(maxTick ~ clusteringCoef*pathLength + outbreakSize)
 #We need to consider: Random effects?
@@ -121,34 +108,12 @@ summary(m2)
 plot(m2)
 
 # M: WE WON'T NEED THIS SINCE WE HAVE THE ONE ABOVE, RIGHT?
-# m2_formula <- bf(maxTick ~ clusteringCoef + pathLength + outbreakSize + (1|ID_new)) #The last bit is how you add repeated measures
-# #We need to consider: Random effects?
-# #Remember: when comparing the models, this model should be punished because it's adding all them parameters 
-# 
-# 
-# get_prior(m2_formula,new_df) #Asking the model which priors it recommend
-# 
-# prior = c(prior(normal(0,1), class = Intercept),
-#           prior(normal(0,1), class = b, coef = clusteringCoef),
-#           prior(normal(0,1), class = b, coef = pathLength),
-#           prior(normal(0,1), class = b, coef = outbreakSize ),
-#           prior(cauchy(0,2), class = sigma))
-# 
-# m2 <- brm(m2_formula,
-#           family = gaussian(), #We assume our likelihood function to be normally distributed
-#           prior = NULL, #our list of pre-defined priors
-#           data = new_df,
-#           iter = 2000,
-#           cores = 2,
-#           chain = 2)
-# 
-# summary(m2)
-# plot(m2)
-
+# A: THAT'S RIGHT
 ```
 
 ```{r}
 ## M: HAVE NOT FIXED THIS PART YET
+## A: ME NEITHER
 #Priors and posteriors - plots
 
 #Plot priors
