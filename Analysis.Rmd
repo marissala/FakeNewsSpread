@@ -33,34 +33,41 @@ So what do we want our models to do?  it's very trashy, fix later.. when we figu
 
 
 ```{r}
-m1_formula <- bf(maxTick ~ outbreakSize+probDetect+(1|ID_new)) #The last bit is how you add repeated measures
-#We need to consider: Random effects?
+rescalelist = c("outbreakSize","probDetect", "clusteringCoef","pathLength")
+new_df.s = new_df[, colnames(new_df) %in% rescalelist] %>% 
+  lapply(.,function(x) scale(x,center= mean(x,na.rm = T), scale = sd(x, na.rm = T)))%>% 
+  cbind(.,new_df[,! colnames(new_df) %in% rescalelist]) 
 
-# get_prior(m1_formula,new_df, family = gaussian(), autocor=NULL, internal=FALSE) #Asking the model which priors it recommend
-# 
-# mean(new_df$outbreakSize)
-# mean(new_df$probDetect)
-# mean(new_df$maxTick)
-# 
-# prior = c(prior(normal(323,140), class = Intercept), #does it make sense???
-#           prior(normal(120,50), class = b, coef = outbreakSize),
-#           prior(normal(0,1), class = b, coef = probDetect),
-#           prior(cauchy(0,140), class = sigma))
+new_df.s2 = unique(new_df.s$ID_new)
+new_df.s2 = group_by(new_df.s, ID_new, outbreakSize, probDetect, maxTick,clusteringCoef, pathLength) %>%
+  summarise_each(funs(mean(., na.rm = TRUE)), runNumber)
 
-prior <- brms::get_prior(
-  brms::bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui, 
-           mui ~ 1 + (1|ID_new),
-           beta ~ 1, 
-           nl = TRUE), #should be treated as a non-linear model
-  data = new_df, 
-  family = gaussian())
+#ProbDetect model
+m1_formula <- bf(maxTick ~ outbreakSize + probDetect)
 
+#Look at the outcome function - which likelihood function do we want?
+  #Outcome is count - poisson 
+dens(new_df.s2$maxTick)
+sd(new_df.s2$maxTick)
 
-prior$prior[c(2,4)] <- "normal(0,10)"
-prior$prior[8] <- "student_t(3, 0, 11)"
-prior
+#get_prior(m1_formula,new_df) #Asking the model which priors it recommend
+
+prior = c(prior(normal(log(80),log(133)), class = Intercept),
+          prior(normal(0,0.5), class = b, coef = outbreakSize), 
+          prior(normal(0,0.5), class = b, coef = probDetect)) 
 
 
+m1 <- brm(m1_formula,
+          family = poisson(link = "log"), #We assume our likelihood function to be poisson
+          prior = prior, #our list of pre-defined priors
+          data = new_df.s2,
+          warmup = 500,
+          iter = 1000,
+          cores = 3,
+          chain = 3)
+
+summary(m1)
+plot(m1)
 
 m1 <- brm(
   bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui,
