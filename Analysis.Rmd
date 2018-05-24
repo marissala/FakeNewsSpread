@@ -9,12 +9,16 @@ Actual Bayesian computational modeling here
 
 ```{r}
 #libraries 
-pacman::p_load(dplyr,magrittr,rethinking,brms,brmstools,ggplot2,caret)
-pacman::p_install_gh("mvuorre/brmstools")
+pacman::p_load(dplyr,magrittr,rethinking,brms,brmstools,ggplot2,caret,brmstools)
+#pacman::p_install_gh("mvuorre/brmstools")
 
 #data
 data = read.csv("CleanData.csv")
 data$X = NULL
+
+#exclude probdetect 0.01 from the dataset for now
+data = subset(data, probDetect > 0.01)
+data = droplevels(data)
 
 #new column
 data$ID_new = as.factor(paste(data$fileID, data$runNumber, sep = "_"))
@@ -42,19 +46,24 @@ new_df.s2 = unique(new_df.s$ID_new)
 new_df.s2 = group_by(new_df.s, ID_new, outbreakSize, probDetect, maxTick,clusteringCoef, pathLength) %>%
   summarise_each(funs(mean(., na.rm = TRUE)), runNumber)
 
-#ProbDetect model
-m1_formula <- bf(maxTick ~ outbreakSize + probDetect)
+#Plot the maxTick
+ggplot(new_df.s2, aes(maxTick, y=..density..)) +
+  geom_histogram(binwidth = 2)
 
 #Look at the outcome function - which likelihood function do we want?
   #Outcome is count - poisson 
 dens(new_df.s2$maxTick)
 sd(new_df.s2$maxTick)
 
-#get_prior(m1_formula,new_df) #Asking the model which priors it recommend
+#ProbDetect model
+m1_formula <- bf(maxTick ~ outbreakSize + probDetect)
 
+get_prior(m1_formula,new_df.s2) #Asking the model which priors it recommend
+
+# M: I MADE US HAVE SKEPTICAL PRIORS HERE
 prior = c(prior(normal(log(80),log(133)), class = Intercept),
-          prior(normal(0,0.5), class = b, coef = outbreakSize), 
-          prior(normal(0,0.5), class = b, coef = probDetect)) 
+          prior(normal(0,0.1), class = b, coef = outbreakSize), 
+          prior(normal(0,0.1), class = b, coef = probDetect)) 
 
 
 m1 <- brm(m1_formula,
@@ -69,41 +78,41 @@ m1 <- brm(m1_formula,
 summary(m1)
 plot(m1)
 
-m1 <- brm(
-  bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui,
-     mui ~ 1 + (1|ID_new),
-     beta~1,
-     nl = TRUE),
-          family = gaussian(), #We assume our likelihood function to be normally distributed
-          prior = prior, #our list of pre-defined priors #write NULL here to use default priors
-          data = new_df,
-          iter = 2000,
-          core = 1,
-          chain = 1)
+## M: WHAT IS THIS?
+# m1 <- brm(
+#   bf(maxTick ~ beta * outbreakSize + (beta^2) * probDetect + mui,
+#      mui ~ 1 + (1|ID_new),
+#      beta~1,
+#      nl = TRUE),
+#           family = gaussian(), #We assume our likelihood function to be normally distributed
+#           prior = prior, #our list of pre-defined priors #write NULL here to use default priors
+#           data = new_df.s2,
+#           iter = 2000,
+#           core = 1,
+#           chain = 1)
+# 
+# summary(m1)
+# plot(m1)
+# 
+# dens(new_df$maxTick) #looks binomial? 
 
-summary(m1)
-plot(m1)
-
-dens(new_df$maxTick) #looks binomial? 
-
-
-m2_formula <- bf(maxTick ~ clusteringCoef + pathLength + outbreakSize + (1|ID_new)) #The last bit is how you add repeated measures
+m2_formula <- bf(maxTick ~ clusteringCoef*pathLength + outbreakSize)
 #We need to consider: Random effects?
 #Remember: when comparing the models, this model should be punished because it's adding all them parameters 
 
 
-get_prior(m2_formula,new_df) #Asking the model which priors it recommend
+get_prior(m2_formula,new_df.s2) #Asking the model which priors it recommend
 
-prior = c(prior(normal(0,1), class = Intercept),
-          prior(normal(0,1), class = b, coef = clusteringCoef),
-          prior(normal(0,1), class = b, coef = pathLength),
-          prior(normal(0,1), class = b, coef = outbreakSize ),
-          prior(cauchy(0,2), class = sigma))
+prior = c(prior(normal(0,0.01), class = Intercept), ## THIS PRIOR SHOULD BE SOMETHING ELSE?
+          prior(normal(0,0.01), class = b, coef = clusteringCoef),
+          prior(normal(0,0.01), class = b, coef = pathLength),
+          prior(normal(0,0.01), class = b, coef = outbreakSize ))
+          #prior(cauchy(0,2), class = sigma))
 
 m2 <- brm(m2_formula,
           family = gaussian(), #We assume our likelihood function to be normally distributed
           prior = NULL, #our list of pre-defined priors
-          data = new_df,
+          data = new_df.s2,
           iter = 2000,
           cores = 2,
           chain = 2)
@@ -111,5 +120,96 @@ m2 <- brm(m2_formula,
 summary(m2)
 plot(m2)
 
+# M: WE WON'T NEED THIS SINCE WE HAVE THE ONE ABOVE, RIGHT?
+# m2_formula <- bf(maxTick ~ clusteringCoef + pathLength + outbreakSize + (1|ID_new)) #The last bit is how you add repeated measures
+# #We need to consider: Random effects?
+# #Remember: when comparing the models, this model should be punished because it's adding all them parameters 
+# 
+# 
+# get_prior(m2_formula,new_df) #Asking the model which priors it recommend
+# 
+# prior = c(prior(normal(0,1), class = Intercept),
+#           prior(normal(0,1), class = b, coef = clusteringCoef),
+#           prior(normal(0,1), class = b, coef = pathLength),
+#           prior(normal(0,1), class = b, coef = outbreakSize ),
+#           prior(cauchy(0,2), class = sigma))
+# 
+# m2 <- brm(m2_formula,
+#           family = gaussian(), #We assume our likelihood function to be normally distributed
+#           prior = NULL, #our list of pre-defined priors
+#           data = new_df,
+#           iter = 2000,
+#           cores = 2,
+#           chain = 2)
+# 
+# summary(m2)
+# plot(m2)
+
+```
+
+```{r}
+## M: HAVE NOT FIXED THIS PART YET
+#Priors and posteriors - plots
+
+#Plot priors
+x <- seq(-2,2, length=1e5)
+y <- dnorm(x, 0, 0.5)
+y.I <- dnorm(x, log(9.2), log(4.8))
+
+prior_df <- data.frame(x = rep(x,1), y = c(y), prior = c(rep("Beta Prior", length(y))))
+ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Beta Prior")
+
+x <- seq(0,4, length = 1e5)
+prior_df <- data.frame(x = rep(x,1), y = c(y.I), prior = c(rep("Intercept Prior", length(y.I))))
+ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Intercept Prior")
+
+plot(y.I)
+
+#Plot predictive priors
+
+#plot posterior distributions 
+  #Model 1
+post_samples <- c(posterior_samples(m1)$b_Intercept)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Intercept", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 1: Posterior Distributions - Intercept", x = "Posterior Samples")
+
+post_samples <- c(posterior_samples(m1)$b_outbreakSize)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Outbreak Size", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 1: Posterior Distributions - Outbreak Size", x = "Posterior Samples")
+
+post_samples <- c(posterior_samples(m1)$b_Ratio_WD)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Ratio of Watch Dogs", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 1: Posterior Distributions - Ratio of Watch Dogs", x = "Posterior Samples")
+
+                      
+  #Model 3
+post_samples <- c(posterior_samples(m2)$b_Intercept)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Intercept", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 3: Posterior Distribution - Intercept", x = "Posterior Samples")
+
+
+post_samples <- c(posterior_samples(m3)$b_outbreakSize)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("OutbreakSize", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 3: Posterior Distribution - Outbreak Size", x = "Posterior Samples")
+
+post_samples <- c(posterior_samples(m3)$b_clusteringCoef)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Clustering Coefficient", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 3: Posterior Distribution - Clustering Coefficient", x = "Posterior Samples")
+
+post_samples <- c(posterior_samples(m3)$b_pathLength)
+post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Average Path Length", 1000)))
+ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 3: Posterior Distribution - Average Path Length", x = "Posterior Samples")
+
+  #compare models with infomation criterion and weights:
+waic <- brms::WAIC(m1, m3)
+weights <- brms::model_weights(m1, m3, weights = "waic")
+
+  #Predictive posterior
+pp_check(m1,nsamples = 200)
+pp_check(m3,nsamples = 200)
+
+  #Making sense of estimates - posterior distribtions for estimates
+stanplot(m1)
+stanplot(m3)
 ```
 
