@@ -95,8 +95,6 @@ data$X = NULL
 
 data$probDetect = as.factor(data$probDetect)
 
-
-
 # Without 0.01 condition
 d1 = subset(data, outbreakSize == "238" & probDetect != "0.01")
 d2 = subset(data, outbreakSize == "3" & probDetect != "0.01")
@@ -231,8 +229,6 @@ post_samples <- c(posterior_samples(m2)$b_probDetect)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Probability of detection", 1000)))
 ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Probability of detection", x = "Posterior Samples")+theme_minimal()
 
-
-
 ```
 
 
@@ -256,5 +252,22 @@ post_samples <- c(posterior_samples(m4)$b_pathLength)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Average Path Length", 1000)))
 ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Average Path Length", x = "Posterior Samples")+theme_minimal()
 
+```
+
+Comparision and quality check
+```{r}
+# Information criterion (WAIC and weights)
+waic <- brms::WAIC(m2, m4)
+weights <- brms::model_weights(m2,m4, weights = "waic")
+waic
+weights
+
+#Predictive posterior
+pp_check(m2,nsamples = 200)
+pp_check(m4,nsamples = 200)
+
+  #Making sense of estimates - posterior distribtions for estimates
+stanplot(m2)
+stanplot(m4)
 ```
 
