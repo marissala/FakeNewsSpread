@@ -9,9 +9,11 @@ Actual Bayesian computational modeling here
 
 ```{r}
 #libraries 
-pacman::p_load(dplyr,magrittr,rethinking,brms,brmstools,ggplot2,caret,brmstools)
+pacman::p_load(dplyr,magrittr,rethinking,brms,brmstools,ggplot2,caret)
 #pacman::p_install_gh("mvuorre/brmstools")
+#brms, brmstools, caret
 
+library(brms)
 #data
 data = read.csv("CleanData.csv")
 data$X = NULL
@@ -67,11 +69,9 @@ m1_formula <- bf(maxTick ~ outbreakSize + probDetect)
 
 get_prior(m1_formula,new_df.s2) #Asking the model which priors it recommend
 
-# M: I MADE US HAVE SKEPTICAL PRIORS HERE 
-# A: Changed it! because the mean and sd of maxtick changed after removing probdetect 0.01
 prior = c(prior(normal(log(15.83),log(9.51)), class = Intercept),
-          prior(normal(0,0.1), class = b, coef = outbreakSize), 
-          prior(normal(0,0.1), class = b, coef = probDetect))
+          prior(normal(0,0.5), class = b, coef = outbreakSize), 
+          prior(normal(0,0.5), class = b, coef = probDetect))
           #prior(cauchy(0,2), class = sigma)) 
 
 
@@ -79,8 +79,8 @@ m1 <- brm(m1_formula,
           family = poisson(link = "log"), #We assume our likelihood function to be poisson
           prior = prior, #our list of pre-defined priors
           data = new_df.s2,
-          warmup = 2500, # increased number of warmup and iterations
-          iter = 5000,
+          warmup = 4000, # increased number of warmup and iterations
+          iter = 10000,
           cores = 3,
           chain = 3)
 
@@ -95,23 +95,29 @@ m2_formula <- bf(maxTick ~ clusteringCoef*pathLength + outbreakSize)
 get_prior(m2_formula,new_df.s2) #Asking the model which priors it recommends 
 
 prior = c(prior(normal(log(15.83), log(9.51)), class = Intercept),
-          prior(normal(0,0.1), class = b, coef = clusteringCoef),
-          prior(normal(0,0.1), class = b, coef = pathLength),
-          prior(normal(0,0.1), class = b, coef = outbreakSize),
-          prior(normal(0,0.1), class = b, coef = clusteringCoef:pathLength))
+          prior(normal(0,0.5), class = b, coef = clusteringCoef),
+          prior(normal(0,0.5), class = b, coef = pathLength),
+          prior(normal(0,0.5), class = b, coef = outbreakSize),
+          prior(normal(0,0.5), class = b, coef = clusteringCoef:pathLength))
           #prior(cauchy(0,2), class = sigma))
 
 m2 <- brm(m2_formula,
           family = poisson(link = "log"), #We assume our likelihood function to be normally distributed
           prior = prior, #our list of pre-defined priors
           data = new_df.s2,
-          iter = 5000,
-          warmup = 2500,
+          iter = 10000,
+          warmup = 4000,
           cores = 3,
           chain = 3)
 
 summary(m2)
 plot(m2)
+pacman::p_load(brms)
+# Info criterions and comparisions
+waic <- brms::WAIC(m1, m2)
+weights <- brms::model_weights(m1,m2, weights = "waic")
+waic
+weights
 ```
 
 ```{r}
