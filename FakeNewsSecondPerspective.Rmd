@@ -138,6 +138,69 @@ ggplot(d3, aes(tick, naivesAmount, color = outbreakSize)) +
   facet_grid(~outbreakSize) +
   ggtitle("Naives")
 
+# model 4
+ggplot(d3, aes(clusteringCoef, y = ..density..)) +
+  geom_histogram()
+
+ggplot(d3, aes(pathLength, y = ..density..)) +
+  geom_histogram()
+
+ggplot(d3, aes(spreadersAmount, y = ..density..)) +
+  geom_histogram()
+
+# untouched kids in the end of simulation
+library("dplyr")
+d6 = d3 %>%
+group_by(runNumber) %>%
+slice(c(1, n())) %>%
+ungroup()
+#Get rid of 1st row
+maxTick2 = dplyr::group_by(d6,runNumber) %>%
+  dplyr::summarize(maxTick2 = max(tick))
+d7=merge(d6,maxTick2)
+d7 = subset(d7, maxTick2 == tick)
+
+# Distribution of untouched ones in the end of simulations
+ggplot(d7, aes(untouchedAmount, y = ..density..)) +
+  geom_histogram() # very odd distribution
+
+# Untouched final amounts for each run number
+d8 = subset(d7, untouchedAmount > 0)
+ggplot(d8, aes(runNumber, untouchedAmount)) +
+  geom_point() # Not gonna use this
+
+### PROPER VISUALIZATIONS FOR THE TWO MODELS ###
+## Based on new.df.s2 but before scaling it because it is the same dataset we use for the models
+#Summarize by so we know the ticks it took to complete each sim - our outcome
+and = unique(new_df$ID_new)
+and = group_by(new_df, ID_new, outbreakSize, probDetect, maxTick,clusteringCoef, pathLength) %>%
+  summarise_each(funs(mean(., na.rm = TRUE)), runNumber)
+
+# For the first model
+and$probDetect = as.factor(and$probDetect)
+ggplot(and, aes(outbreakSize, maxTick, color = probDetect)) +
+  geom_point() +
+  facet_grid(~probDetect) +
+  theme_minimal() +
+  theme(legend.position="none") +
+  labs(x = "Outbreak size", y = "Maximum amount of tick per simulation")
+
+# For the second model
+and$outbreakSize = as.factor(and$outbreakSize)
+ggplot(and, aes(clusteringCoef, maxTick, color = outbreakSize)) +
+  geom_point() +
+  facet_grid(~outbreakSize) +
+  theme_minimal() +
+  theme(legend.position="none") +
+  labs(x = "Clustering coefficient", y = "Maximum amount of tick per simulation")
+
+ggplot(and, aes(pathLength, maxTick, color = outbreakSize)) +
+  geom_point() +
+  facet_grid(~outbreakSize) +
+  theme_minimal() +
+  theme(legend.position="none") +
+  labs(x = "Average path length", y = "Maximum amount of tick per simulation")
+
 ```
 
 
