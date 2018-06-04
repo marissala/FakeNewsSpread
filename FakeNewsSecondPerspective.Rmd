@@ -99,6 +99,7 @@ data$probDetect = as.factor(data$probDetect)
 d1 = subset(data, outbreakSize == "238" & probDetect != "0.01")
 d2 = subset(data, outbreakSize == "3" & probDetect != "0.01")
 d3<- subset(data, probDetect != "0.01")
+d3$naivesAmount_new <- (d3$naivesAmount - d3$untouchedAmount)
 
 ggplot(d2, aes(tick, spreadersAmount, color = probDetect)) +
   geom_point() +
@@ -110,33 +111,43 @@ ggplot(d1, aes(tick, spreadersAmount, color = probDetect)) +
   theme_classic()+
   ggtitle("Size = 238, Amount of spreaders over time")
 
-ggplot(d3, aes(tick, spreadersAmount, color = outbreakSize)) +
+H1 = ggplot(d3, aes(tick, spreadersAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
   facet_grid(~outbreakSize) +
-  ggtitle("Spreaders")
+  ggtitle("Spreaders") +
+  theme_minimal() +
+  theme(legend.position="none")
 
-ggplot(d3, aes(tick, educatedAmount, color = outbreakSize)) +
+H2 = ggplot(d3, aes(tick, educatedAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
   facet_grid(~outbreakSize) +
-  ggtitle("Educated")
+  ggtitle("Educated") +
+  theme_minimal() +
+  theme(legend.position="none")
 
-ggplot(d3, aes(tick, untouchedAmount, color = outbreakSize)) +
+H3 = ggplot(d3, aes(tick, untouchedAmount, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
   facet_grid(~outbreakSize) +
-  ggtitle("Untouched")
+  ggtitle("Untouched") +
+  theme_minimal() +
+  theme(legend.position="none")
 
-ggplot(d3, aes(tick, naivesAmount, color = outbreakSize)) +
+H4 = ggplot(d3, aes(tick, naivesAmount_new, color = outbreakSize)) +
   geom_smooth() +
   #geom_point()+
   theme_classic() +
   facet_grid(~outbreakSize) +
-  ggtitle("Naives")
+  ggtitle("Naives") +
+  theme_minimal() +
+  theme(legend.position="none")
+
+gridExtra::grid.arrange(H1,H2,H3,H4)
 
 # model 4
 ggplot(d3, aes(clusteringCoef, y = ..density..)) +
@@ -238,7 +249,7 @@ plot(m2)
 
 ## MODEL 4 ##
 #Structure effects
-m4_formula <- bf(maxTick ~ clusteringCoef*pathLength + outbreakSize)
+m4_formula <- bf(maxTick ~ clusteringCoef*pathLength)
 
 
 get_prior(m4_formula,new_df.s2) #Asking the model which priors it recommends 
@@ -246,7 +257,6 @@ get_prior(m4_formula,new_df.s2) #Asking the model which priors it recommends
 prior = c(prior(normal(log(15.83), log(9.51)), class = Intercept),
           prior(normal(0,0.5), class = b, coef = clusteringCoef),
           prior(normal(0,0.5), class = b, coef = pathLength),
-          prior(normal(0,0.5), class = b, coef = outbreakSize),
           prior(normal(0,0.5), class = b, coef = clusteringCoef:pathLength))
         
 
@@ -272,25 +282,28 @@ y <- dnorm(x, 0, 0.5)
 y.I <- dnorm(x, log(15.83), log(9.51))
 
 prior_df <- data.frame(x = rep(x,1), y = c(y), prior = c(rep("Beta Prior", length(y))))
-ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Beta Prior")+theme_minimal()
+p5=ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Beta Prior")+theme_minimal()+theme(legend.position="none")
 
 x <- seq(0,4, length = 1e5)
 prior_df <- data.frame(x = rep(x,1), y = c(y.I), prior = c(rep("Intercept Prior", length(y.I))))
-ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Intercept Prior")+theme_minimal()
+p4=ggplot(prior_df, aes(x = x, y = y, color = prior)) + geom_line() + ggtitle("Intercept Prior")+theme_minimal()+theme(legend.position="none")
 
 #plot posterior distributions 
   #Model 1
 post_samples <- c(posterior_samples(m2)$b_Intercept)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Intercept", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Intercept", x = "Posterior Samples")+theme_minimal()
+p1 = ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 1: Posterior Distribution - Intercept", x = "Posterior Samples")+theme_minimal()+theme(legend.position="none")
 
 post_samples <- c(posterior_samples(m2)$b_outbreakSize)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Outbreak Size", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Outbreak Size", x = "Posterior Samples")+theme_minimal()
+p2 = ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 1: Posterior Distribution - Outbreak Size", x = "Posterior Samples")+theme_minimal()+theme(legend.position="none")
 
 post_samples <- c(posterior_samples(m2)$b_probDetect)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Probability of detection", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Probability of detection", x = "Posterior Samples")+theme_minimal()
+p3 = ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 1: Posterior Distribution - Probability of detection", x = "Posterior Samples")+theme_minimal()+theme(legend.position="none")
+
+gridExtra::grid.arrange(p4,p5)
+gridExtra::grid.arrange(p1,p2,p3)
 
 ```
 
@@ -300,21 +313,18 @@ Model 4
 #Model 4
 post_samples <- c(posterior_samples(m4)$b_Intercept)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Intercept", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Intercept", x = "Posterior Samples")+theme_minimal()
-
-
-post_samples <- c(posterior_samples(m4)$b_outbreakSize)
-post_df <- data.frame(post_samples = post_samples, parameter = c(rep("OutbreakSize", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Outbreak Size", x = "Posterior Samples")+theme_minimal()
+m1=ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Intercept", x = "Posterior Samples")+theme_minimal()+theme(legend.position="none")
 
 post_samples <- c(posterior_samples(m4)$b_clusteringCoef)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Clustering Coefficient", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Clustering Coefficient", x = "Posterior Samples")+theme_minimal()
+m3=ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Clustering Coefficient", x = "Posterior Samples")+theme_minimal()+theme(legend.position="none")
 
 post_samples <- c(posterior_samples(m4)$b_pathLength)
 post_df <- data.frame(post_samples = post_samples, parameter = c(rep("Average Path Length", 1000)))
-ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 4: Posterior Distribution - Average Path Length", x = "Posterior Samples")+theme_minimal()
+m40=ggplot(post_df, aes(x = post_samples, color = parameter)) + geom_density(adjust = 1) + labs(title = "Model 2: Posterior Distribution - Average Path Length", x = "Posterior Samples")+theme_minimal()+theme(legend.position="none")
 
+gridExtra::grid.arrange(m1,m3,m40)
+m40
 ```
 
 Comparision and quality check
